@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t sredahan/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run sredahan/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t sredahan/multi-client ./client
+  - docker build -t sredahan/multi-nginx ./nginx
+  - docker build -t sredahan/multi-server ./server
+  - docker build -t sredahan/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push sredahan/multi-client
+  - docker push sredahan/multi-nginx
+  - docker push sredahan/multi-server
+  - docker push sredahan/multi-worker
